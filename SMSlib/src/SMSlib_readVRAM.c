@@ -19,15 +19,56 @@ void SMS_saveTileMapArea(unsigned char x, unsigned char y, void *dst, unsigned c
 
 #pragma save
 #pragma disable_warning 85
-void SMS_readVRAM(void *dst, unsigned int src, unsigned int size) __naked __z88dk_callee __preserves_regs(iyh,iyl) __sdcccall(1)
-{
+void * SMS_saveTileMapColumnatAddr(unsigned int src, void *dst, unsigned int height) __naked __z88dk_callee __sdcccall(1) {
+    // src in hl
+    // dst in de
+    // height onto the stack
+    // returns dst+height
+__asm
+    pop bc          ; pop ret address
+    pop iy          ; pop height
+    push bc         ; push ret address
+
+    ; Make sure this is a read operation (write bit is set when TILEtoADDR is used to compute src)
+    res 6,h
+
+2$:
+    ld c,#_VDPControlPort
+    di
+    out (c),l
+    out (c),h
+    ei                               ; 4
+
+    ld bc,#64                        ; 10
+    add hl,bc                        ; 11
+
+    ld c,#_VDPDataPort               ; 7 = VRAM safe
+
+    in a,(c)                         ; 12
+    ld (de),a                        ; 7
+    inc de                           ; 6
+    nop                              ; 4 = VRAM safe
+
+    in a,(c)
+    ld (de),a
+    inc de
+
+    dec iyl
+    jr nz,2$
+
+    ex de,hl                         ; move current DE into HL
+    ret
+__endasm;
+}
+
+void SMS_readVRAM(void *dst, unsigned int src, unsigned int size) __naked __z88dk_callee __preserves_regs(iyh,iyl) __sdcccall(1) {
     // dst in hl
     // src in de
     // size onto the stack
 __asm
-    ld c, #_VDPControlPort
+    ld c,#_VDPControlPort
 
-    ; Make sure this is a read (write bit is set if TILEtoADDR is used to compute src)
+    ; Make sure this is a read operation (write bit is set when TILEtoADDR is used to compute src)
     ld a, d
     and a, #0x3f
 
@@ -54,7 +95,6 @@ __asm
     dec a
     jp nz, 1$
     ret
-
 __endasm;
 }
 #pragma restore

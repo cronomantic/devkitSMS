@@ -127,8 +127,10 @@ void SMS_crt0_RST18(unsigned int tile) __z88dk_fastcall __preserves_regs(b,c,d,e
 #define TILE_PRIORITY             0x1000
 
 /* functions to load tiles into VRAM */
-#define SMS_loadTiles(src,tilefrom,size)            SMS_VRAMmemcpy((tilefrom)*32,(src),(size))
+#define SMS_loadTiles(src,tilefrom,size) SMS_VRAMmemcpy((tilefrom)*32,(src),(size))
 void SMS_load1bppTiles (const void *src, unsigned int tilefrom, unsigned int size, unsigned char color0, unsigned char color1);
+#define SMS_load2bppTiles(src,tilefrom,size) SMS_load2bppTilesatAddr((src),TILEtoADDR(tilefrom),(size))
+void SMS_load2bppTilesatAddr (const void *src, unsigned int dest, unsigned int size) __naked __z88dk_callee __preserves_regs(iyh,iyl) __sdcccall(1);
 
 /* functions to load compressed tiles into VRAM */
 #define SMS_loadSTC0compressedTiles(src,tilefrom) SMS_loadSTC0compressedTilesatAddr((src),TILEtoADDR(tilefrom))
@@ -175,6 +177,8 @@ unsigned int SMS_getTile(void) __naked __z88dk_fastcall __preserves_regs(b,c,d,e
 
 /* Functions for reading back tilemap and VRAM */
 void SMS_saveTileMapArea(unsigned char x, unsigned char y, void *dst, unsigned char width, unsigned char height);
+void * SMS_saveTileMapColumnatAddr(unsigned int src, void *dst, unsigned int height) __naked __z88dk_callee __sdcccall(1);
+#define SMS_saveTileMapColumn(x,y,dst,height)   SMS_saveTileMapColumnatAddr(XYtoADDR((x),(y)),(dst),(height))
 void SMS_readVRAM(void *dst, unsigned int src, unsigned int size) __naked __z88dk_callee __preserves_regs(iyh,iyl) __sdcccall(1);
 
 /* ***************************************************************** */
