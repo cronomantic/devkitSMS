@@ -12,6 +12,7 @@ unsigned char stc4_buffer[4];
 void SMS_loadSTC4compressedTilesatAddr (const void *src, unsigned int dst) __naked __sdcccall(1) {
   __asm
   ld c,#0xbf                          ; VDP_CTRL_PORT
+  set 6,d                             ; set VRAM address for write
   di
   out (c),e                           ; set VRAM destination address
   out (c),d

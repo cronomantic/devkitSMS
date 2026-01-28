@@ -10,6 +10,7 @@
 void SMS_loadSTC0compressedTilesatAddr (const void *src, unsigned int dst) __naked __sdcccall(1) {
   __asm
   ld c,#0xbf                          ; VDP_CTRL_PORT
+  set 6,d                             ; set VRAM address for write
   di
   out (c),e
   out (c),d
