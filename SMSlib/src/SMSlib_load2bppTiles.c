@@ -9,6 +9,7 @@
 #pragma save
 #pragma disable_warning 85
 void SMS_load2bppTilesatAddr (const void *src, unsigned int dest, unsigned int size) __naked __z88dk_callee __preserves_regs(iyh,iyl) __sdcccall(1) {
+  // loop performance: 27¼ cycles per output byte, thus 68+ tiles can be written in a single frame (at 60Hz)
   __asm
   ld c,#0xbf            ; VDP_CTRL_PORT
   set 6,d               ; set VRAM address for write
@@ -24,22 +25,23 @@ void SMS_load2bppTilesatAddr (const void *src, unsigned int dest, unsigned int s
   ld c,#0xbe            ; VDP_DATA_PORT
 
 1$:
-  ld a,(hl)                     ; 7 = 29
-  out (c),a             ; 12
-  inc hl                ; 6
-  ld a,(hl)             ; 7
-  nop                   ; 4 = 29
-  out (c),a                     ; 12
-  inc hl                        ; 6
-  xor a                         ; 4
-  dec de                        ; 6 = 28
-  out (c),a             ; 12
+  outi                         ; 16 = 28
+
+  sub a,#0              ; (delay) 7
+  xor a                 ; 4
+  outi                  ; 16 = 27
+
+  dec de                ; 6
   dec de                ; 6
   ld b,a                ; 4
+  out (#0xbe),a         ; 11 = 27
+
+  sub a,#0              ; (delay) 7
   ld a,d                ; 4
-  or e                  ; 4 = 30
-  out (c),b                     ; 12
-  jp nz,1$                      ; 10
+  or e                  ; 4
+  out(c),b              ; 12 = 27
+
+  jr nz,1$                     ; 12
   ret
   __endasm;
 }
